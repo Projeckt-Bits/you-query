@@ -2,15 +2,15 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 
-// Firebase configuration object containing all necessary API keys and identifiers
+// Firebase configuration object using environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyA416XOHOVsE2ZpMZmKes_qcR-MsXqgt5M",
-  authDomain: "you-query.firebaseapp.com",
-  projectId: "you-query",
-  storageBucket: "you-query.firebasestorage.app",
-  messagingSenderId: "614442013421",
-  appId: "1:614442013421:web:793519986a762bb8ccf2e4",
-  measurementId: "G-1DMTVBLQDZ"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
