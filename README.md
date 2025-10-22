@@ -1,6 +1,7 @@
 # YouQuery - AI Portfolio Chatbot Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Hacktoberfest 2025](https://img.shields.io/badge/Hacktoberfest-2025-orange?logo=hackthebox&logoColor=white)](https://hacktoberfest.com/)
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-18.0+-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
 
