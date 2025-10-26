@@ -1,29 +1,74 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { app } from '../../firebase';
+import { 
+  signInWithPopup,
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase';
+import { useRouter } from 'next/navigation';
 
-export const AuthContext = createContext();
+// Create auth context
+export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const auth = getAuth(app);
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
-  // Sign up function
-  const signup = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  // Sign up with email/password
+  const signup = async (email, password) => {
+    try {
+      setError(null);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      return userCredential;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
   };
 
-  // Login function
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  // Sign in with email/password
+  const login = async (email, password) => {
+    try {
+      setError(null);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      return userCredential;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
   };
 
-  // Logout function
-  const logout = () => {
-    return signOut(auth);
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    try {
+      setError(null);
+      const result = await signInWithPopup(auth, googleProvider);
+      // This gives you a Google Access Token
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      return result.user;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
+  };
+
+  // Sign out
+  const logout = async () => {
+    try {
+      await firebaseSignOut(auth);
+      router.push('/login');
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    }
   };
 
   // Set up auth state listener
@@ -31,16 +76,27 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      
+      // Redirect based on auth state
+      if (currentUser) {
+        router.push('/dashboard');
+      } else {
+        router.push('/login');
+      }
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [router]);
 
   const value = {
     user,
+    loading,
+    error,
     signup,
     login,
+    signInWithGoogle,
     logout,
+    setError
   };
 
   return (
