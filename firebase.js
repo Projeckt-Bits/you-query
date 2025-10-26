@@ -1,32 +1,45 @@
 // Firebase configuration and initialization
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-// Firebase configuration object using environment variables
+// Direct Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyA416XOHOVsE2ZpMZmKes_qcR-MsXqgt5M",
+  authDomain: "you-query.firebaseapp.com",
+  projectId: "you-query",
+  storageBucket: "you-query.appspot.com",
+  messagingSenderId: "614442013421",
+  appId: "1:614442013421:web:793519986a762bb8ccf2e4",
+  measurementId: "G-1DMTVBLQDZ"
 };
 
+console.log("Firebase Config Loaded:", {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain
+});
+
 // Initialize Firebase
-let app = null;
+export const app = initializeApp(firebaseConfig);
+
+// Initialize Auth
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
+// Initialize Analytics (browser only)
 let analytics = null;
 
-try {
-  app = initializeApp(firebaseConfig);
-  analytics = getAnalytics(app);
-  
-  console.log("Firebase initialized successfully");
-} catch (error) {
-  console.error("Firebase initialization error:", error);
-  // Re-throw the error to prevent the app from starting with broken Firebase
-  throw error;
+if (typeof window !== 'undefined') {
+  isSupported().then(supported => {
+    if (supported) {
+      analytics = getAnalytics(app);
+      console.log("Firebase Analytics initialized successfully");
+    }
+  }).catch(error => {
+    console.error("Firebase Analytics initialization error:", error);
+  });
 }
 
-// Export the initialized app and analytics instances
-export { app, analytics };
+export { analytics };
+
+console.log("Firebase initialized successfully");
