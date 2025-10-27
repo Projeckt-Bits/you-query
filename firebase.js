@@ -2,17 +2,21 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getDatabase } from "firebase/database";
+import { getStorage } from "firebase/storage";
 
 // Direct Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA416XOHOVsE2ZpMZmKes_qcR-MsXqgt5M",
-  authDomain: "you-query.firebaseapp.com",
-  projectId: "you-query",
-  storageBucket: "you-query.appspot.com",
-  messagingSenderId: "614442013421",
-  appId: "1:614442013421:web:793519986a762bb8ccf2e4",
-  measurementId: "G-1DMTVBLQDZ"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
+
+
 
 console.log("Firebase Config Loaded:", {
   projectId: firebaseConfig.projectId,
@@ -21,6 +25,12 @@ console.log("Firebase Config Loaded:", {
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
+
+// Initialize Database
+export const database = getDatabase(app);
+
+// Initialize Storage
+export const storage = getStorage(app);
 
 // Initialize Auth
 export const auth = getAuth(app);
