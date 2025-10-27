@@ -41,31 +41,36 @@ export default function ChatBox() {
     setInputMessage('');
     setIsLoading(true);
 
-    try {
-      // Simulate AI response - Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      const botMessage = {
-        id: Date.now() + 1,
-        text: `I received your message: "${inputMessage}". This is a placeholder response. Connect to your AI API to get real responses.`,
-        sender: 'bot',
-        timestamp: new Date(),
-      };
+try {
+const response = await fetch("/api/auth/getGeminiResponse", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: inputMessage }),
+});
+const data = await response.json();
 
-      setMessages((prev) => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-      inputRef.current?.focus();
-    }
+const botMessage = {
+  id: Date.now() + 1,
+  text: data.reply || "Sorry, I didn't understand that.",
+  sender: "bot",
+  timestamp: new Date(),
+};
+
+  setMessages((prev) => [...prev, botMessage]);
+} catch (error) {
+  console.error("Error sending message:", error);
+  const errorMessage = {
+    id: Date.now() + 1,
+    text: "Sorry, I encountered an error. Please try again later.",
+    sender: "bot",
+    timestamp: new Date(),
+  };
+  setMessages((prev) => [...prev, errorMessage]);
+} finally {
+  setIsLoading(false);
+  inputRef.current?.focus();
+}
+
   };
 
   const handleKeyPress = (e) => {
