@@ -4,9 +4,11 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { database } from "../../../firebase";
 import { ref as dbRef, get } from "firebase/database";
+import { useRouter } from "next/navigation";
 
 export default function Header({ onToggleSidebar }) {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [greetingName, setGreetingName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [open, setOpen] = useState(false);
@@ -56,60 +58,83 @@ export default function Header({ onToggleSidebar }) {
           <span className="font-semibold tracking-tight text-white">YouQuery</span>
         </div>
         <nav aria-label="Header actions" className="flex items-center gap-3">
-          {greetingName ? (
-            <span className="hidden sm:inline text-sm/6 text-white/90">Hey, <strong className="font-semibold text-white">{greetingName}</strong></span>
-          ) : null}
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            aria-expanded={open}
-            onClick={() => setOpen(true)}
-            className="inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-full"
-            title="View profile"
-          >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border border-white/30 hover:ring-2 hover:ring-white/60 transition"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <span className="grid place-items-center w-8 h-8 rounded-full bg-white/20 text-white text-xs font-semibold">
-                {user?.email?.[0]?.toUpperCase() || 'U'}
-              </span>
-            )}
-          </button>
+          {user ? (
+            <>
+              {greetingName ? (
+                <span className="hidden sm:inline text-sm/6 text-white/90">Hey, <strong className="font-semibold text-white">{greetingName}</strong></span>
+              ) : null}
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                onClick={() => setOpen(true)}
+                className="inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-full"
+                title="View profile"
+              >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover border border-white/30 hover:ring-2 hover:ring-white/60 transition"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="grid place-items-center w-8 h-8 rounded-full bg-white/20 text-white text-xs font-semibold">
+                    {user?.email?.[0]?.toUpperCase() || 'U'}
+                  </span>
+                )}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push('/login?notice=fill')}
+              className="px-3 py-1.5 rounded-md text-sm border border-white/20 text-white hover:bg-white/10 transition-colors"
+            >
+              Sign in
+            </button>
+          )}
         </nav>
       </div>
 
-      {/* Dialog */}
-      <div
-        className={`fixed inset-0 z-50 ${open ? '' : 'pointer-events-none'}`}
-        aria-hidden={!open}
-      >
-        {/* Overlay */}
+      {/* Dialog - only when authenticated */}
+      {user ? (
         <div
-          className={`absolute inset-0 bg-black/40 transition-opacity ${open ? 'opacity-100' : 'opacity-0'}`}
-          onClick={() => setOpen(false)}
-        />
-        {/* Panel */}
-        <div className={`absolute right-4 top-16 w-80 bg-white text-[--color-foreground] rounded-lg shadow-lg border border-[--border] transition-transform ${open ? 'translate-y-0' : '-translate-y-2 opacity-0'}`} role="dialog" aria-modal="true" aria-label="User info">
-          <div className="p-4 flex items-center gap-3">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-[--border]" />
-            ) : (
-              <span className="grid place-items-center w-10 h-10 rounded-full bg-[--color-primary-500] text-white text-sm font-semibold">
-                {user?.email?.[0]?.toUpperCase() || 'U'}
-              </span>
-            )}
-            <div className="min-w-0">
-              <div className="font-bold text-black truncate">{greetingName || 'User'}</div>
-              <div className="text-sm text-black truncate">{user?.email}</div>
+          className={`fixed inset-0 z-50 ${open ? '' : 'pointer-events-none'}`}
+          aria-hidden={!open}
+        >
+          {/* Overlay */}
+          <div
+            className={`absolute inset-0 bg-black/40 transition-opacity ${open ? 'opacity-100' : 'opacity-0'}`}
+            onClick={() => setOpen(false)}
+          />
+          {/* Panel */}
+          <div className={`absolute right-4 top-16 w-80 bg-white text-[--color-foreground] rounded-lg shadow-lg border border-[--border] transition-transform ${open ? 'translate-y-0' : '-translate-y-2 opacity-0'}`} role="dialog" aria-modal="true" aria-label="User info">
+            <div className="p-4 flex items-center gap-3">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Profile" className="w-10 h-10 rounded-full object-cover border border-[--border]" />
+              ) : (
+                <span className="grid place-items-center w-10 h-10 rounded-full bg-[--color-primary-500] text-white text-sm font-semibold">
+                  {user?.email?.[0]?.toUpperCase() || 'U'}
+                </span>
+              )}
+              <div className="min-w-0">
+                <div className="font-bold text-black truncate">{greetingName || 'User'}</div>
+                <div className="text-sm text-black truncate">{user?.email}</div>
+              </div>
+            </div>
+            <div className="px-4 pb-4">
+              <button
+                type="button"
+                onClick={async () => { setOpen(false); try { await logout(); } catch (_) {} }}
+                className="w-full inline-flex items-center justify-center px-3 py-2 rounded-md text-white bg-[#3B82F6] hover:bg-[#2563EB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-focus] text-sm"
+              >
+                Sign out
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </header>
   );
 }
