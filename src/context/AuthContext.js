@@ -10,7 +10,7 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 // Create auth context
 export const AuthContext = createContext({});
@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Sign up with email/password
   const signup = async (email, password) => {
@@ -76,17 +77,21 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      
-      // Redirect based on auth state
+
+      // Conditional redirects to avoid hijacking navigation
       if (currentUser) {
-        router.push('/dashboard');
+        if (pathname === '/' || pathname === '/login' || pathname === '/signup') {
+          router.push('/dashboard');
+        }
       } else {
-        router.push('/login');
+        if (pathname !== '/login' && pathname !== '/signup') {
+          router.push('/login');
+        }
       }
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, [router, pathname]);
 
   const value = {
     user,
