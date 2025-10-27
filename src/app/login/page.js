@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import Link from 'next/link';
 import GoogleSignInButton from '../../components/GoogleSignInButton';
@@ -10,8 +10,10 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const { login, user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -20,9 +22,24 @@ export default function Login() {
     }
   }, [user, router]);
 
+  // Show notice toast when coming from Sign in CTA
+  useEffect(() => {
+    const n = searchParams?.get('notice');
+    if (n === 'fill') {
+      setNotice('Please enter your email and password to continue.');
+      const t = setTimeout(() => setNotice(''), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!email || !password) {
+      setNotice('Please fill in both email and password.');
+      const t = setTimeout(() => setNotice(''), 2500);
+      return () => clearTimeout(t);
+    }
     
     try {
       await login(email, password);
@@ -37,6 +54,11 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        {notice ? (
+          <div className="px-3 py-2 rounded-md text-sm text-blue-800 bg-blue-50 border border-blue-200">
+            {notice}
+          </div>
+        ) : null}
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Welcome Back

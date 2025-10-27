@@ -65,6 +65,40 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await firebaseSignOut(auth);
+
+      // Best-effort client cleanup
+      if (typeof window !== 'undefined') {
+        try {
+          // Clear web storage
+          window.localStorage?.clear?.();
+          window.sessionStorage?.clear?.();
+
+          // Clear caches (for apps using Cache API)
+          if (window.caches?.keys) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+
+          // Clear IndexedDB databases, including Firebase ones
+          if (indexedDB?.databases) {
+            const dbs = await indexedDB.databases();
+            await Promise.all(
+              dbs.map((db) => (db?.name ? new Promise((res) => { const req = indexedDB.deleteDatabase(db.name); req.onsuccess = req.onerror = req.onblocked = () => res(); }) : Promise.resolve()))
+            );
+          } else {
+            // Fallback: try deleting known Firebase DB names
+            const names = [
+              'firebaseLocalStorageDb',
+              'firebase-installations-database',
+              'firebase-heartbeat-database'
+            ];
+            names.forEach((name) => { try { indexedDB.deleteDatabase(name); } catch (_) {} });
+          }
+        } catch (_) {
+          // ignore cleanup errors
+        }
+      }
+
       router.push('/login');
     } catch (error) {
       setError(error.message);
