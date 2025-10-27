@@ -45,7 +45,10 @@ try {
 const response = await fetch("/api/auth/getGeminiResponse", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ message: inputMessage }),
+  body: JSON.stringify({
+    message: inputMessage,
+    chatId: "defaultChatId", // or dynamic chat id per session
+  }),
 });
 const data = await response.json();
 
